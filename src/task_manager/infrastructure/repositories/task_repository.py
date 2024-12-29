@@ -32,11 +32,11 @@ class TaskRepository:
     def get_connection(self):
         try:
             conn = psycopg2.connect(
-                host=self.settings.DB_HOST,
-                port=self.settings.DB_PORT,
                 dbname=self.settings.DB_NAME,
                 user=self.settings.DB_USER,
-                password=self.settings.DB_PASS
+                password=self.settings.DB_PASS,
+                host=self.settings.DB_HOST,
+                port=self.settings.DB_PORT
             )
             conn.cursor_factory = psycopg2.extras.DictCursor
             return conn
@@ -105,7 +105,7 @@ class TaskRepository:
 
     @transactional
     async def update_task(self, task_id: int, task: Task, conn=None) -> Optional[Task]:
-        query = "UPDATE tasks SET"
+        query = "UPDATE tasks SET "
         updates = []
         params = []
     

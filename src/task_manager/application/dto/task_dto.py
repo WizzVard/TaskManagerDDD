@@ -12,16 +12,13 @@ class TaskDTO(BaseModel):
     project_id: Optional[int] = None
 
 class CreateTaskDTO(TaskDTO):
-    """DTO для создания задачи - наследует все поля от TaskDTO"""
     pass
 
 class UpdateTaskDTO(TaskDTO):
-    """DTO для обновления задачи - все поля опциональны"""
     title: Optional[str] = None
     status: Optional[TaskStatus] = None
 
 class TaskResponseDTO(TaskDTO):
-    """DTO для ответа - добавляет поля id и timestamps"""
     id: int
     created_at: datetime
     updated_at: Optional[datetime] = None

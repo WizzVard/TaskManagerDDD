@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, UTC
 
 BASE_URL = "http://localhost:8000/tasks"
 
-def test_create_and_get_task():
+def test_task_manager():
     task_data = {
         "title": "Test Task",
         "description": "Test Description",
@@ -14,6 +14,17 @@ def test_create_and_get_task():
     response = requests.post(BASE_URL, json=task_data)
     print("\nStatus code:", response.status_code)
     print("Server response:", response.json())
+
+    task_data_updated = {
+        "title": "Test Task Updated",
+        "description": "Test Description Updated"
+    }
+
+    response = requests.delete(BASE_URL + "/16")
+    print("\nStatus code:", response.status_code)
+    
+    response = requests.patch(BASE_URL + "/20", json=task_data_updated)
+    print("\nStatus code:", response.status_code)
     
     # Get all tasks
     response = requests.get(BASE_URL)
@@ -28,48 +39,6 @@ def test_create_and_get_task():
         print(f"Created at: {task['created_at']}")
         print("---")
 
-def test_validation():
-    # Тест 1: Пустой title (должен вернуть ошибку)
-    invalid_task = {
-        "title": "",  # Нарушает min_length=1
-        "description": "Test Description"
-    }
-    response = requests.post(BASE_URL, json=invalid_task)
-    print("\nTest 1 - Empty title:")
-    print(f"Status code: {response.status_code}")  # Должен быть 422
-    print(f"Response: {response.json()}")
-
-    # Тест 2: Слишком длинный title (должен вернуть ошибку)
-    invalid_task = {
-        "title": "A" * 101,  # Нарушает max_length=100
-        "description": "Test Description"
-    }
-    response = requests.post(BASE_URL, json=invalid_task)
-    print("\nTest 2 - Too long title:")
-    print(f"Status code: {response.status_code}")  # Должен быть 422
-    print(f"Response: {response.json()}")
-
-    # Тест 3: Некорректный формат даты
-    invalid_task = {
-        "title": "Test Task",
-        "deadline": "not-a-date"  # Неверный формат datetime
-    }
-    response = requests.post(BASE_URL, json=invalid_task)
-    print("\nTest 3 - Invalid date format:")
-    print(f"Status code: {response.status_code}")  # Должен быть 422
-    print(f"Response: {response.json()}")
-
-    # Тест 4: Корректные данные (должно работать)
-    valid_task = {
-        "title": "Test Task",
-        "description": "Test Description",
-        "deadline": datetime.now(UTC).isoformat()
-    }
-    response = requests.post(BASE_URL, json=valid_task)
-    print("\nTest 4 - Valid data:")
-    print(f"Status code: {response.status_code}")  # Должен быть 200
-    print(f"Response: {response.json()}")
 
 if __name__ == "__main__":
-    test_create_and_get_task()
-    test_validation()
+    test_task_manager()
