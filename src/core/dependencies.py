@@ -2,7 +2,7 @@ from fastapi import Depends
 from typing import Annotated
 from src.task_manager.application.services.task_service import TaskService
 from src.task_manager.infrastructure.repositories.task_repository import TaskRepository
-from src.task_manager.infrastructure.google_calendar_client import GoogleCalendarClient
+from src.task_manager.infrastructure.external_services.google_calendar_client import GoogleCalendarClient
 from src.core.config import Settings
 
 def get_settings() -> Settings:

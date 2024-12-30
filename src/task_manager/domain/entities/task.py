@@ -19,7 +19,8 @@ class Task:
         project_id: Optional[int] = None,
         id: Optional[int] = None,
         created_at: Optional[datetime] = None,
-        updated_at: Optional[datetime] = None
+        updated_at: Optional[datetime] = None,
+        calendar_event_id: Optional[str] = None
     ):
         if not title:
             raise ValueError("Title cannot be empty")
@@ -31,6 +32,7 @@ class Task:
         self.project_id = project_id
         self.created_at = created_at or datetime.now(UTC)
         self.updated_at = updated_at
+        self.calendar_event_id = calendar_event_id
 
     @classmethod
     def from_dto(cls, dto: CreateTaskDTO) -> "Task":

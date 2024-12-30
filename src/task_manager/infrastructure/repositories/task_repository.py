@@ -47,8 +47,11 @@ class TaskRepository:
     @transactional
     async def create_task(self, task: Task, conn=None) -> Task:
         query = """
-            INSERT INTO tasks (title, description, status, deadline, project_id, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO tasks (
+                title, description, status, deadline, 
+                project_id, created_at, calendar_event_id
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             RETURNING id, created_at;
         """
         with conn.cursor() as cursor:
@@ -58,7 +61,8 @@ class TaskRepository:
                 task.status,
                 task.deadline,
                 task.project_id,
-                task.created_at
+                task.created_at,
+                task.calendar_event_id
             ))
             result = cursor.fetchone()
             task.id = result[0]
@@ -105,31 +109,23 @@ class TaskRepository:
 
     @transactional
     async def update_task(self, task_id: int, task: Task, conn=None) -> Optional[Task]:
-        query = "UPDATE tasks SET "
-        updates = []
-        params = []
-    
-        if task.title:
-            updates.append("title = %s")
-            params.append(task.title)
-        if task.description:
-            updates.append("description = %s")
-            params.append(task.description)
-        if task.status:
-            updates.append("status = %s")
-            params.append(task.status)
-        if task.deadline:
-            updates.append("deadline = %s")
-            params.append(task.deadline)
-        if task.project_id:
-            updates.append("project_id = %s")
-            params.append(task.project_id)
-        
-        params.append(task_id)
-        query += ", ".join(updates) + " WHERE id = %s RETURNING *;"
-
+        query = """
+            UPDATE tasks 
+            SET title = %s, description = %s, status = %s, 
+                deadline = %s, project_id = %s, calendar_event_id = %s 
+            WHERE id = %s 
+            RETURNING *;
+        """
         with conn.cursor() as cursor:
-            cursor.execute(query, tuple(params))
+            cursor.execute(query, (
+                task.title,
+                task.description,
+                task.status,
+                task.deadline,
+                task.project_id,
+                task.calendar_event_id,
+                task_id
+            ))
             row = cursor.fetchone()
             if row:
                 return Task(
@@ -140,7 +136,8 @@ class TaskRepository:
                     deadline=row['deadline'],
                     project_id=row['project_id'],
                     created_at=row['created_at'],
-                    updated_at=row['updated_at']
+                    updated_at=row['updated_at'],
+                    calendar_event_id=row['calendar_event_id']
                 )
             return None
 

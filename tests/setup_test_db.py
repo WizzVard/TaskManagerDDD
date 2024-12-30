@@ -50,7 +50,8 @@ def setup_test_db():
                     deadline TIMESTAMP WITH TIME ZONE,
                     project_id INTEGER,
                     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP WITH TIME ZONE
+                    updated_at TIMESTAMP WITH TIME ZONE,
+                    calendar_event_id VARCHAR(100)
                 );
             """)
         conn.commit()

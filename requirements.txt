@@ -7,3 +7,6 @@ pytest
 pytest-asyncio>=0.21.0
 pytest-cov
 httpx
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
