@@ -4,28 +4,10 @@ import psycopg2.extras
 from typing import List, Optional
 from src.task_manager.domain.entities.task import Task
 from src.core.config import Settings
+from src.task_manager.domain.repositories.task_repository_interface import TaskRepositoryInterface
+from src.task_manager.infrastructure.common.transaction_decorator import transactional
 
-def transactional(func):
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        db_instance = args[0]  # self
-        conn = None
-        try:
-            conn = db_instance.get_connection()
-            result = await func(*args, conn=conn, **kwargs)
-            conn.commit()
-            return result
-        except Exception as e:
-            if conn:
-                conn.rollback()
-            print(f"Error in transaction: {e}")
-            raise
-        finally:
-            if conn:
-                conn.close()
-    return wrapper
-
-class TaskRepository:
+class TaskRepository(TaskRepositoryInterface):
     def __init__(self, settings: Settings):
         self.settings = settings
 
@@ -47,10 +29,8 @@ class TaskRepository:
     @transactional
     async def create_task(self, task: Task, conn=None) -> Task:
         query = """
-            INSERT INTO tasks (
-                title, description, status, deadline, 
-                project_id, created_at, calendar_event_id
-            )
+            INSERT INTO tasks (title, description, status, deadline, 
+                project_id, created_at, calendar_event_id)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             RETURNING id, created_at;
         """

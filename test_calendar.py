@@ -1,11 +1,11 @@
-from src.task_manager.infrastructure.external_services.google_calendar_client import GoogleCalendarClient
+from src.task_manager.infrastructure.external.google_calendar_api import GoogleCalendarAPI
 from src.task_manager.domain.entities.task import Task
 from datetime import datetime, timedelta, UTC
 import asyncio
 
 async def test_calendar_integration():
     # Create a calendar client
-    calendar_client = GoogleCalendarClient()
+    calendar_client = GoogleCalendarAPI()
     
     # Create a task
     task = Task(

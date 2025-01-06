@@ -3,7 +3,7 @@ from datetime import datetime, UTC
 from src.task_manager.domain.entities.task import Task
 from src.core.config import Settings
 from src.task_manager.infrastructure.repositories.task_repository import TaskRepository
-from src.task_manager.infrastructure.external_services.google_calendar_client import GoogleCalendarClient
+from src.task_manager.infrastructure.repositories.google_calendar_repository import GoogleCalendarRepository
 from src.task_manager.application.services.task_service import TaskService
 
 @pytest.fixture
