@@ -1,31 +1,17 @@
-from functools import wraps
-import psycopg2
-import psycopg2.extras
 from typing import List, Optional
 from src.task_manager.domain.entities.task import Task
-from src.core.config import Settings
 from src.task_manager.domain.repositories.task_repository_interface import TaskRepositoryInterface
 from src.task_manager.infrastructure.common.transaction_decorator import transactional
+from src.task_manager.infrastructure.database.database_connection import DatabaseConnection
+
 
 class TaskRepository(TaskRepositoryInterface):
-    def __init__(self, settings: Settings):
-        self.settings = settings
+    def __init__(self, db_connection: DatabaseConnection):
+        self.db_connection = db_connection
 
     def get_connection(self):
-        try:
-            conn = psycopg2.connect(
-                dbname=self.settings.DB_NAME,
-                user=self.settings.DB_USER,
-                password=self.settings.DB_PASS,
-                host=self.settings.DB_HOST,
-                port=self.settings.DB_PORT
-            )
-            conn.cursor_factory = psycopg2.extras.DictCursor
-            return conn
-        except Exception as e:
-            print(f"Error connecting to database: {e}")
-            raise
-
+        return self.db_connection.get_connection()
+    
     @transactional
     async def create_task(self, task: Task, conn=None) -> Task:
         query = """

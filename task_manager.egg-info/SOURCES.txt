@@ -1,3 +1,4 @@
+pyproject.toml
 setup.py
 src/core/config.py
 src/core/dependencies.py
@@ -7,7 +8,4 @@ src/task_manager/interfaces/api/task_router.py
 task_manager.egg-info/PKG-INFO
 task_manager.egg-info/SOURCES.txt
 task_manager.egg-info/dependency_links.txt
-task_manager.egg-info/requires.txt
 task_manager.egg-info/top_level.txt
-tests/test_task_repository.py
-tests/test_task_service.py
