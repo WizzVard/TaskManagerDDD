@@ -4,6 +4,7 @@ from src.task_manager.infrastructure.repositories.google_calendar_repository imp
 from src.task_manager.application.dto.task_dto import CreateTaskDTO, UpdateTaskDTO
 from src.task_manager.domain.repositories.calendar_repository_interface import CalendarRepositoryInterface
 from src.task_manager.domain.repositories.task_repository_interface import TaskRepositoryInterface
+from src.task_manager.domain.entities.project import Project
 
 class TaskService:
     def __init__(
@@ -14,12 +15,18 @@ class TaskService:
         self.task_repository = task_repository
         self.calendar_repository = calendar_repository
 
-    async def create_task(self, data: CreateTaskDTO) -> Task:
+    async def create_task(self, data: CreateTaskDTO, project_id: str | None = None) -> Task:
+        project = None
+        if project_id:
+            project = await self.project_repository.get_project_by_id(project_id)
+        
         task = Task(
             title=data.title,
             description=data.description,
-            deadline=data.deadline
+            deadline=data.deadline,
+            project=project
         )
+
         # Создаем событие в календаре через репозиторий
         event_id = await self.calendar_repository.create_event(task)
         task.calendar_event_id = event_id

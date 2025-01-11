@@ -7,10 +7,14 @@ class GoogleCalendarRepository(CalendarRepositoryInterface):
     def __init__(self):
         self.calendar_api = GoogleCalendarAPI()
 
-    async def create_event(self, task: Task) -> str:
+    async def create_event(self, task: Task, project = None) -> dict:
+        description = task.description or ""
+        if project:
+            description = f"Project: {project.name}\n\n{description}"
+        
         event_data = {
             'summary': task.title,
-            'description': task.description,
+            'description': description,
             'start': {
                 'dateTime': task.deadline.isoformat() if task.deadline else 
                 (datetime.now() + timedelta(days=1)).isoformat(),
@@ -23,6 +27,12 @@ class GoogleCalendarRepository(CalendarRepositoryInterface):
             },
             'reminders': {
                 'useDefault': True
+            },
+            'extendedProperties': {
+                'private': {
+                    'taskId': str(task.id),
+                    'projectId': str(project.id) if project else None
+                }
             }
         }
 

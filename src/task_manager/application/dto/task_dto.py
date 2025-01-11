@@ -12,7 +12,9 @@ class TaskDTO(BaseModel):
     project_id: Optional[int] = None
 
 class CreateTaskDTO(TaskDTO):
-    pass
+    title: str
+    description: Optional[str]
+    deadline: datetime
 
 class UpdateTaskDTO(TaskDTO):
     title: Optional[str] = None

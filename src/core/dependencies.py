@@ -1,11 +1,15 @@
 from fastapi import Depends
 from typing import Annotated
 from src.task_manager.application.services.task_service import TaskService
+from src.task_manager.application.services.project_service import ProjectService
 from src.task_manager.infrastructure.repositories.task_repository import TaskRepository
+from src.task_manager.infrastructure.repositories.project_repository import ProjectRepository
+
 from src.task_manager.infrastructure.repositories.google_calendar_repository import GoogleCalendarRepository
 from src.task_manager.domain.repositories.calendar_repository_interface import CalendarRepositoryInterface
 from src.core.config import Settings
 from src.task_manager.domain.repositories.task_repository_interface import TaskRepositoryInterface
+from src.task_manager.domain.repositories.project_repository_interface import ProjectRepositoryInterface
 
 def get_settings() -> Settings:
     return Settings()
@@ -15,6 +19,11 @@ def get_task_repository(
 ) -> TaskRepository:
     return TaskRepository(settings)
 
+def get_project_repository(
+        settings: Annotated[Settings, Depends(get_settings)]
+) -> ProjectRepository:
+    return ProjectRepository(settings)
+
 def get_calendar_repository() -> CalendarRepositoryInterface:
     return GoogleCalendarRepository()
 
@@ -23,3 +32,9 @@ def get_task_service(
     calendar_repository: CalendarRepositoryInterface = Depends(get_calendar_repository)
 ) -> TaskService:
     return TaskService(task_repository, calendar_repository)
+
+def get_project_service(
+        project_repository: ProjectRepositoryInterface = Depends(get_project_repository),
+        calendar_repository: CalendarRepositoryInterface = Depends(get_calendar_repository)
+) -> ProjectService:
+    return ProjectService(project_repository, calendar_repository)

@@ -4,11 +4,23 @@ from typing import List
 from src.task_manager.application.dto.task_dto import CreateTaskDTO, UpdateTaskDTO, TaskResponseDTO
 from src.task_manager.application.services.task_service import TaskService
 from src.core.dependencies import get_task_service
+from src.task_manager.application.services.project_service import ProjectService
+from src.task_manager.application.dto.project_dto import CreateProjectDTO, UpdateProjectDTO, ProjectResponseDTO
+from src.core.dependencies import get_project_service
+
 
 router = APIRouter(
     prefix="/tasks", 
     tags=["tasks"]
 )
+
+@router.post("/projects")
+async def create_project(
+    project_dto: CreateProjectDTO,
+    project_service: ProjectService = Depends(get_project_service)
+) -> ProjectResponseDTO:
+    project = await project_service.create_project(project_dto)
+    return ProjectResponseDTO.model_validate(project)
 
 @router.post("", response_model=TaskResponseDTO)
 async def create_task(
