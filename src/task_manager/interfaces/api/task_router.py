@@ -14,11 +14,12 @@ router = APIRouter(
     tags=["tasks"]
 )
 
-@router.post("/projects")
+@router.post("/projects", response_model=ProjectResponseDTO)
 async def create_project(
     project_dto: CreateProjectDTO,
     project_service: ProjectService = Depends(get_project_service)
 ) -> ProjectResponseDTO:
+    """Create a new project"""
     project = await project_service.create_project(project_dto)
     return ProjectResponseDTO.model_validate(project)
 
@@ -30,6 +31,15 @@ async def create_task(
     "Create a new task"
     task = await task_service.create_task(task_dto)
     return TaskResponseDTO.model_validate(task)
+
+@router.get("/projects/{project_id}/tasks")
+async def get_tasks_by_project(
+    project_id: int,
+    task_service: TaskService = Depends(get_task_service)
+) -> List[TaskResponseDTO]:
+    tasks = await task_service.get_tasks_by_project(project_id)
+    return [TaskResponseDTO.from_entity(task) for task in tasks]
+
 
 @router.get("/{task_id}", response_model=TaskResponseDTO)
 async def get_task(
@@ -64,18 +74,18 @@ async def update_task(
     task_dto:  UpdateTaskDTO,
     task_service: TaskService = Depends(get_task_service)
 ) -> TaskResponseDTO:
-    "Update a task by its ID"
-    task = await task_service.update_task(task_id, task_dto)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return TaskResponseDTO.model_validate(task)
+    try:
+        task = await task_service.update_task(task_id, task_dto)
+        return TaskResponseDTO.model_validate(task)
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 @router.delete("/{task_id}", status_code=204)
 async def delete_task(
     task_id: int,
     task_service: TaskService = Depends(get_task_service)
 ) -> None:
-    "Delete a task by its ID"
-    success = await task_service.delete_task(task_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Task not found")
+    try: 
+        await task_service.delete_task(task_id)
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))

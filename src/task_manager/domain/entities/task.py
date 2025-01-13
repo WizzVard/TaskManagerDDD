@@ -17,6 +17,7 @@ class Task:
         status: Union[str, TaskStatus] = TaskStatus.NEW,
         deadline: Optional[datetime] = None,
         project_id: Optional[int] = None,
+        color: Optional[str] = None,
         id: Optional[int] = None,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
@@ -30,6 +31,7 @@ class Task:
         self.status = status.value if isinstance(status, TaskStatus) else status
         self.deadline = deadline
         self.project_id = project_id
+        self.color = color
         self.created_at = created_at or datetime.now(UTC)
         self.updated_at = updated_at
         self.calendar_event_id = calendar_event_id
@@ -41,7 +43,8 @@ class Task:
             description = dto.description,
             status = dto.status,
             deadline = dto.deadline,
-            project_id = dto.project_id
+            project_id = dto.project_id,
+            color = dto.color
         )
 
     def set_title(self, title: str):

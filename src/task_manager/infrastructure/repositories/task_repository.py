@@ -18,7 +18,7 @@ class TaskRepository(TaskRepositoryInterface):
             INSERT INTO tasks (title, description, status, deadline, 
                 project_id, created_at, calendar_event_id)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
-            RETURNING id, created_at;
+            RETURNING id, created_at, calendar_event_id;
         """
         with conn.cursor() as cursor:
             cursor.execute(query, (
@@ -33,6 +33,7 @@ class TaskRepository(TaskRepositoryInterface):
             result = cursor.fetchone()
             task.id = result[0]
             task.created_at = result[1]
+            task.calendar_event_id = result[2]
             return task
 
     @transactional
@@ -50,9 +51,30 @@ class TaskRepository(TaskRepositoryInterface):
                     deadline=row['deadline'],
                     project_id=row['project_id'],
                     created_at=row['created_at'],
-                    updated_at=row['updated_at']
+                    updated_at=row['updated_at'],
+                    calendar_event_id=row['calendar_event_id']
                 )
             return None
+        
+    @transactional
+    async def get_tasks_by_project(self, project_id: str, conn=None) -> List[Task]:
+        query = "SELECT * FROM tasks WHERE project_id = %s;"
+        with conn.cursor() as cursor:
+            cursor.execute(query, (project_id,))
+            rows = cursor.fetchall()
+            return [
+                Task(
+                    id=row['id'],
+                    title=row['title'],
+                    description=row['description'],
+                    status=row['status'],
+                    deadline=row['deadline'],
+                    project_id=row['project_id'],
+                    created_at=row['created_at'],
+                    updated_at=row['updated_at'],
+                    calendar_event_id=row['calendar_event_id']
+                ) for row in rows
+            ]
 
     @transactional
     async def get_all_tasks(self, conn=None) -> List[Task]:
@@ -112,5 +134,12 @@ class TaskRepository(TaskRepositoryInterface):
         query = "DELETE FROM tasks WHERE id = %s;"
         with conn.cursor() as cursor:
             cursor.execute(query, (task_id,))
+            return cursor.rowcount > 0
+        
+    @transactional
+    async def delete_all_tasks(self, conn=None) -> bool:
+        query = "DELETE FROM tasks;"
+        with conn.cursor() as cursor:
+            cursor.execute(query)
             return cursor.rowcount > 0
 

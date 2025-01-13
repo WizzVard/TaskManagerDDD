@@ -15,6 +15,7 @@ class CreateTaskDTO(TaskDTO):
     title: str
     description: Optional[str]
     deadline: datetime
+    color: Optional[str] = None
 
 class UpdateTaskDTO(TaskDTO):
     title: Optional[str] = None

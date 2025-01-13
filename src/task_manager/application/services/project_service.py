@@ -1,10 +1,7 @@
-from datetime import datetime
-from typing import List
 from src.task_manager.domain.entities.project import Project
-from src.task_manager.infrastructure.repositories.project_repository import ProjectRepository
 from src.task_manager.domain.repositories.project_repository_interface import ProjectRepositoryInterface
 from src.task_manager.domain.repositories.calendar_repository_interface import CalendarRepositoryInterface
-from src.task_manager.application.dto.project_dto import CreateProjectDTO, UpdateProjectDTO
+from src.task_manager.application.dto.project_dto import CreateProjectDTO
 
 class ProjectService:
     def __init__(self, 
@@ -16,11 +13,9 @@ class ProjectService:
     async def create_project(self, data: CreateProjectDTO) -> Project:
         project = Project(
             name=data.name,
-            description=data.description
+            description=data.description,
+            color=data.color
         )
-        project_id = await self.calendar_repository.create_project(project)
-        project.calendar_project_id = project_id
-
         return await self.project_repository.create_project(project)
     
     async def get_project(self, project_id: int) -> Project:

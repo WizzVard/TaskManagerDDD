@@ -9,6 +9,7 @@ class Project:
     id: Optional[int] = None
     name: Optional[str] = None
     description: Optional[str] = None
+    color: Optional[str] = None
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: Optional[datetime] = None
     # tasks: List[Task] = None

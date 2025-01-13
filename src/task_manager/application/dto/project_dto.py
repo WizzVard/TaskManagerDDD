@@ -1,15 +1,23 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
-class ProjectDTO(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100)
+class CreateProjectDTO(BaseModel):
+    name: str
     description: Optional[str] = None
+    color: Optional[str] = None  # Hex цвет (#RRGGBB)
+
+class UpdateProjectDTO(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    color: Optional[str] = None
 
 class ProjectResponseDTO(BaseModel):
     id: int
     name: str
     description: Optional[str] = None
-    task_count: int
+    color: Optional[str] = None
     created_at: datetime
-    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True  # Это позволит конвертировать ORM объекты в DTO

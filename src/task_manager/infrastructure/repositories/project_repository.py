@@ -92,3 +92,10 @@ class ProjectRepository(ProjectRepositoryInterface):
         with conn.cursor() as cursor:
             cursor.execute(query, (project_id,))
             return cursor.rowcount > 0
+        
+    @transactional
+    async def delete_all_projects(self, conn=None) -> bool:
+        query = "DELETE FROM projects;"
+        with conn.cursor() as cursor:
+            cursor.execute(query)
+            return cursor.rowcount > 0
