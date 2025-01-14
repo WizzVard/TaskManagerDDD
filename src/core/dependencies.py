@@ -42,6 +42,7 @@ def get_task_service(
 
 def get_project_service(
         project_repository: ProjectRepositoryInterface = Depends(get_project_repository),
+        task_repository: TaskRepositoryInterface = Depends(get_task_repository),
         calendar_repository: CalendarRepositoryInterface = Depends(get_calendar_repository)
 ) -> ProjectService:
-    return ProjectService(project_repository, calendar_repository)
+    return ProjectService(project_repository, task_repository, calendar_repository)

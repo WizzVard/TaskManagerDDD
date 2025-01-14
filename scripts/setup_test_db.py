@@ -55,9 +55,9 @@ def setup_test_db():
                     id SERIAL PRIMARY KEY,
                     name VARCHAR(100) NOT NULL,
                     description TEXT,
+                    color VARCHAR(7) NOT NULL,
                     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP WITH TIME ZONE,
-                    task_count INTEGER NOT NULL DEFAULT 0
+                    updated_at TIMESTAMP WITH TIME ZONE
                 );
             """)
 

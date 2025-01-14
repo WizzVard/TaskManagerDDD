@@ -5,12 +5,13 @@ from datetime import datetime
 class CreateProjectDTO(BaseModel):
     name: str
     description: Optional[str] = None
-    color: Optional[str] = None  # Hex цвет (#RRGGBB)
+    color: Optional[str] = None
 
 class UpdateProjectDTO(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     color: Optional[str] = None
+    updated_at: Optional[datetime] = None
 
 class ProjectResponseDTO(BaseModel):
     id: int
@@ -18,6 +19,7 @@ class ProjectResponseDTO(BaseModel):
     description: Optional[str] = None
     color: Optional[str] = None
     created_at: datetime
+    updated_at: Optional[datetime] = None
 
     class Config:
-        from_attributes = True  # Это позволит конвертировать ORM объекты в DTO
+        from_attributes = True

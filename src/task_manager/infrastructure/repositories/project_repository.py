@@ -1,8 +1,9 @@
 from src.task_manager.domain.entities.project import Project
+from src.task_manager.domain.entities.task import Task
 from src.task_manager.domain.repositories.project_repository_interface import ProjectRepositoryInterface
 from src.task_manager.infrastructure.common.transaction_decorator import transactional
 from src.task_manager.infrastructure.database.database_connection import DatabaseConnection
-from typing import Optional, List
+from typing import Optional, List, Tuple, Dict
 
 
 class ProjectRepository(ProjectRepositoryInterface):
@@ -15,14 +16,15 @@ class ProjectRepository(ProjectRepositoryInterface):
     @transactional
     async def create_project(self, project: Project, conn=None) -> Project:
         query = """
-            INSERT INTO projects (name, description, created_at)
-            VALUES (%s, %s, %s)
+            INSERT INTO projects (name, description, color, created_at)
+            VALUES (%s, %s, %s, %s)
             RETURNING id, created_at;
         """
         with conn.cursor() as cursor:
             cursor.execute(query, (
                 project.name,
                 project.description,
+                project.color,
                 project.created_at
             ))
             result = cursor.fetchone()
@@ -41,38 +43,87 @@ class ProjectRepository(ProjectRepositoryInterface):
                     id=row['id'],
                     name=row['name'],
                     description=row['description'],
+                    color=row['color'],
                     created_at=row['created_at'],
                     updated_at=row['updated_at']
                 )
             return None
         
     @transactional
-    async def get_all_projects(self, conn=None) -> List[Project]:
-        query = "SELECT * FROM projects;"
+    async def get_all_projects_with_tasks(self, conn=None) -> List[Tuple[Project, List[Task]]]:
+        # Получаем все проекты
+        projects_query = """
+            SELECT id, name, description, color, created_at, updated_at 
+            FROM projects
+            ORDER BY created_at DESC;
+        """
         with conn.cursor() as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            return [
-                Project(
+            cursor.execute(projects_query)
+            project_rows = cursor.fetchall()
+
+            # Получаем все задачи для этих проектов
+            if project_rows:
+                project_ids = [row['id'] for row in project_rows]
+                placeholders = ','.join(['%s'] * len(project_ids))
+                tasks_query = f"""
+                    SELECT id, title, description, status, deadline, 
+                           project_id, created_at, updated_at, calendar_event_id
+                    FROM tasks 
+                    WHERE project_id IN ({placeholders})
+                    ORDER BY created_at DESC;
+                """
+                cursor.execute(tasks_query, project_ids)
+                task_rows = cursor.fetchall()
+
+                tasks_by_project = {}
+                for row in task_rows:
+                    project_id = row['project_id']
+                    if project_id not in tasks_by_project:
+                        tasks_by_project[project_id] = []
+
+                    tasks_by_project[project_id].append(
+                        Task(
+                            id=row['id'],
+                            title=row['title'],
+                            description=row['description'],
+                            status=row['status'],
+                            deadline=row['deadline'],
+                            project_id=row['project_id'],
+                            created_at=row['created_at'],
+                            updated_at=row['updated_at'],
+                            calendar_event_id=row['calendar_event_id']
+                        )
+                    )
+
+            result = []
+            for row in project_rows:
+                project = Project(
                     id=row['id'],
                     name=row['name'],
                     description=row['description'],
+                    color=row['color'],
                     created_at=row['created_at'],
                     updated_at=row['updated_at']
-                ) for row in rows
-            ]
+                )
+                tasks = tasks_by_project.get(row['id'], [])
+                result.append((project, tasks))
+
+            return result
         
     @transactional
     async def update_project(self, project_id: int, project: Project, conn=None) -> Project: 
-        query = """UPDATE projects 
-        SET name = %s, description = %s, updated_at = %s
-        WHERE id = %s
-        RETURNING *;"""
+        query = """
+            UPDATE projects 
+            SET name = %s, description = %s, color = %s, 
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+            RETURNING *;
+        """
         with conn.cursor() as cursor:
             cursor.execute(query, (
                 project.name,
                 project.description,
-                project.updated_at,
+                project.color,
                 project_id
             ))
             row = cursor.fetchone()
@@ -81,6 +132,7 @@ class ProjectRepository(ProjectRepositoryInterface):
                     id=row['id'],
                     name=row['name'],
                     description=row['description'],
+                    color=row['color'],
                     created_at=row['created_at'],
                     updated_at=row['updated_at']
                 )

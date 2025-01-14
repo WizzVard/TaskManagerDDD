@@ -8,29 +8,27 @@ from src.task_manager.application.services.project_service import ProjectService
 from src.task_manager.application.dto.project_dto import CreateProjectDTO, UpdateProjectDTO, ProjectResponseDTO
 from src.core.dependencies import get_project_service
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/tasks", 
     tags=["tasks"]
 )
 
-@router.post("/projects", response_model=ProjectResponseDTO)
-async def create_project(
-    project_dto: CreateProjectDTO,
-    project_service: ProjectService = Depends(get_project_service)
-) -> ProjectResponseDTO:
-    """Create a new project"""
-    project = await project_service.create_project(project_dto)
-    return ProjectResponseDTO.model_validate(project)
-
 @router.post("", response_model=TaskResponseDTO)
 async def create_task(
     task_dto: CreateTaskDTO,
     task_service: TaskService = Depends(get_task_service)
 ) -> TaskResponseDTO:
-    "Create a new task"
-    task = await task_service.create_task(task_dto)
-    return TaskResponseDTO.model_validate(task)
+    """Create a new task"""
+    try:
+        task = await task_service.create_task(task_dto)
+        return TaskResponseDTO.model_validate(task)
+    except Exception as e:
+        logger.error(f"Error creating task: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/projects/{project_id}/tasks")
 async def get_tasks_by_project(
@@ -52,7 +50,7 @@ async def get_task(
         raise HTTPException(status_code=404, detail="Task not found")
     return TaskResponseDTO.model_validate(task)
 
-
+    
 @router.get("", response_model=List[TaskResponseDTO])
 async def get_tasks(
     task_service: TaskService = Depends(get_task_service)

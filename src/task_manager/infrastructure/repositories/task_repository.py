@@ -3,7 +3,7 @@ from src.task_manager.domain.entities.task import Task
 from src.task_manager.domain.repositories.task_repository_interface import TaskRepositoryInterface
 from src.task_manager.infrastructure.common.transaction_decorator import transactional
 from src.task_manager.infrastructure.database.database_connection import DatabaseConnection
-
+from datetime import datetime, UTC
 
 class TaskRepository(TaskRepositoryInterface):
     def __init__(self, db_connection: DatabaseConnection):
@@ -100,7 +100,8 @@ class TaskRepository(TaskRepositoryInterface):
         query = """
             UPDATE tasks 
             SET title = %s, description = %s, status = %s, 
-                deadline = %s, project_id = %s, calendar_event_id = %s 
+                deadline = %s, project_id = %s, calendar_event_id = %s,
+                updated_at = CURRENT_TIMESTAMP
             WHERE id = %s 
             RETURNING *;
         """
@@ -142,4 +143,28 @@ class TaskRepository(TaskRepositoryInterface):
         with conn.cursor() as cursor:
             cursor.execute(query)
             return cursor.rowcount > 0
+
+    @transactional
+    async def get_tasks_by_project_id(self, project_id: int, conn=None) -> List[Task]:
+        query = """
+            SELECT * FROM tasks 
+            WHERE project_id = %s AND calendar_event_id IS NOT NULL;
+        """
+        with conn.cursor() as cursor:
+            cursor.execute(query, (project_id,))
+            rows = cursor.fetchall()
+            return [
+                Task(
+                    id=row['id'],
+                    title=row['title'],
+                    description=row['description'],
+                    status=row['status'],
+                    deadline=row['deadline'],
+                    project_id=row['project_id'],
+                    created_at=row['created_at'],
+                    updated_at=row['updated_at'],
+                    calendar_event_id=row['calendar_event_id']
+                ) for row in rows
+            ]
+
 

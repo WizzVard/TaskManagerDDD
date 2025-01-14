@@ -51,18 +51,22 @@ class Task:
         if not title:
             raise ValueError("Title cannot be empty")
         self.title = title
+        self.updated_at = datetime.now(UTC)
 
     def set_description(self, description: str):
         self.description = description
+        self.updated_at = datetime.now(UTC)
 
     def set_deadline(self, deadline: datetime):
         if deadline and deadline < datetime.now():
             raise ValueError("Deadline cannot be in the past")
         self.deadline = deadline
+        self.updated_at = datetime.now(UTC)
 
     def change_status(self, new_status: TaskStatus):
         if self._can_transition_to(new_status):
             self.status = new_status.value
+            self.updated_at = datetime.now(UTC)
         else:
             raise InvalidStatusTransition(f"Cannot transition from {self.status} to {new_status.value}")
         
@@ -83,16 +87,3 @@ class Task:
 
     def __repr__(self):
         return (f"Task(id={self.id}, title={self.title}, description={self.description}, status={self.status.value}, deadline={self.deadline}, project_id={self.project_id})")
-
-if __name__ == "__main__":
-    try:
-        task = Task(id="1", title="Implement Task Management System", deadline=datetime(2024, 12, 31))
-        print(task)
-        task.change_status(TaskStatus.SCHEDULED)
-        print(task)
-        task.change_status(TaskStatus.IN_PROGRESS)
-        print(task)
-        task.change_status(TaskStatus.DONE)
-        print(task)
-    except (ValueError, InvalidStatusTransition) as e:
-        print(f"Error: {e}")

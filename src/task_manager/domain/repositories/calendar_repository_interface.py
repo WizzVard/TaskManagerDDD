@@ -9,7 +9,7 @@ class CalendarRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    async def update_event(self, task: Task) -> None:
+    async def update_event(self, task: Task, project: Project) -> None:
         """Update calendar event for task"""
         pass
 
