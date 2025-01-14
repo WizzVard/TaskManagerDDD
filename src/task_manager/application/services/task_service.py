@@ -28,52 +28,34 @@ class TaskService:
     async def get_tasks_by_project(self, project_id: int) -> List[Task]:
         return await self.task_repository.get_tasks_by_project(project_id)
     
-    # async def create_task(self, data: CreateTaskDTO) -> Task:
-    #     try:
-    #         # Fase 1: Create task in db without calendar_event_id
-    #         task = Task.from_dto(data)
-    #         task = await self.task_repository.create_task(task)
-
-    #         # Fase 2: Create calendar event
-    #         if task.deadline:
-    #             project = None
-    #             if task.project_id:
-    #                 project = await self.project_repository.get_project_by_id(task.project_id)
-
-    #             calendar_event_id = await self.calendar_repository.create_event(task, project)
-
-    #             # Fase 3: Update task with calendar_event_id
-    #             task.calendar_event_id = calendar_event_id
-    #             task = await self.task_repository.update_task(task.id, task)
-
-    #     except Exception as e:
-    #         if calendar_event_id:
-    #             await self.calendar_repository.delete_event(task)
-    #         if task and task.id:
-    #             await self.task_repository.delete_task(task.id)
-    #         raise TaskCreationException(f"Failed to create task: {str(e)}")
-            
-    
-    async def create_task(self, data: CreateTaskDTO, project_id: int | None = None) -> Task:
-        project = None
+    async def create_task(self, data: CreateTaskDTO) -> Task:
+        task = None
+        calendar_event_id = None
         try:
-            if project_id:
-                project = await self.project_repository.get_project_by_id(project_id)
-            
-            task = Task(
-                title=data.title,
-                description=data.description,
-                deadline=data.deadline,
-                project_id=project.id if project else None
-            )
+            # Fase 1: Create task in db without calendar_event_id
+            task = Task.from_dto(data)
+            task = await self.task_repository.create_task(task)
 
+            # Fase 2: Create calendar event
             if task.deadline:
-                event_id = await self.calendar_repository.create_event(task, project)
-                task.calendar_event_id = event_id
-            
-            return await self.task_repository.create_task(task)
+                project = None
+                if task.project_id:
+                    project = await self.project_repository.get_project_by_id(task.project_id)
+
+                calendar_event_id = await self.calendar_repository.create_event(task, project)
+
+                # Fase 3: Update task with calendar_event_id
+                task.calendar_event_id = calendar_event_id
+                task = await self.task_repository.update_task(task.id, task)
+
+            return task
+
         except Exception as e:
-            raise
+            if calendar_event_id:
+                await self.calendar_repository.delete_event(task)
+            if task and task.id:
+                await self.task_repository.delete_task(task.id)
+            raise TaskCreationException(f"Failed to create task: {str(e)}")
 
     async def update_task(self, task_id: int, data: UpdateTaskDTO) -> Task:
         existing_task = await self.get_task(task_id)

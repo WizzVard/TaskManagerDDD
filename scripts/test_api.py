@@ -8,31 +8,31 @@ PROJECT_URL = f"{BASE_URL}/tasks/projects"
 
 
 def test_task_manager():
-    # # Создаем проект
-    # project_data = {
-    #     "name": "Test Project",
-    #     "description": "Test Project Description",
-    #     "color": "#FFB878"  # Tangerine (colorId: 6)
-    # }
-    # response = requests.post(PROJECT_URL, json=project_data)
-    # print("\nCreate Project Status code:", response.status_code)
-    # project = response.json()
-    # project_id = project["id"]
-    # print(f"Created project with color: {project['color']}")
+    # Создаем проект
+    project_data = {
+        "name": "Test Project",
+        "description": "Test Project Description",
+        "color": "#FFB878"  # Tangerine (colorId: 6)
+    }
+    response = requests.post(PROJECT_URL, json=project_data)
+    print("\nCreate Project Status code:", response.status_code)
+    project = response.json()
+    project_id = project["id"]
+    print(f"Created project with color: {project['color']}")
     
-    # # Создаем задачу в проекте
-    # task_data = {
-    #     "title": "Test Task",
-    #     "description": "Test Description",
-    #     "deadline": (datetime.now(UTC) + timedelta(days=1)).isoformat(),
-    #     "project_id": int(project_id)
-    # }
+    # Создаем задачу в проекте
+    task_data = {
+        "title": "Test Task",
+        "description": "Test Description",
+        "deadline": (datetime.now(UTC) + timedelta(days=1)).isoformat(),
+        "project_id": int(project_id)
+    }
 
-    # # Create task
-    # response = requests.post(TASK_URL, json=task_data)
-    # print("\nCreate Task Status code:", response.status_code)
-    # created_task = response.json()
-    # print("Created task:", created_task)
+    # Create task
+    response = requests.post(TASK_URL, json=task_data)
+    print("\nCreate Task Status code:", response.status_code)
+    created_task = response.json()
+    print("Created task:", created_task)
 
     # # Create another task
     # response = requests.post(TASK_URL, json=task_data)
